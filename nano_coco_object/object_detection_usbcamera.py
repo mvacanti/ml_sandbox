@@ -1,13 +1,14 @@
-# Adapted from https://medium.com/swlh/nvidia-jetson-nano-custom-object-detection-from-scratch-using-tensorflow-and-opencv-113fe4dba134
+# Adapted from:
+# https://medium.com/swlh/nvidia-jetson-nano-custom-object-detection-from-scratch-using-tensorflow-and-opencv-113fe4dba134
 
-sys.path.append("..")
 import os
 import cv2
 import numpy as np
 import tensorflow as tf
 import sys
+
+sys.path.append("..")
 from jetcam.usb_camera import USBCamera
-from object_detection.utils import ops as utils_ops
 from utils import label_map_util
 from utils import visualization_utils as vis_util
 
@@ -26,9 +27,9 @@ PATH_TO_CKPT = os.path.join(CWD_PATH, MODEL_NAME, 'frozen_inference_graph.pb')
 PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
 
 label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
+                                                            use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
-
 
 detection_graph = tf.compat.v1.Graph()
 with detection_graph.as_default():
@@ -49,7 +50,6 @@ detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
 
 num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-
 camera = USBCamera(width=640, height=480, capture_width=640, capture_height=480, capture_device=1, capture_fps=30)
 
 frame_rate_calc = 1
@@ -58,27 +58,22 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 WIN_NAME = 'Object Detection Test'
 
-
 window_handle = cv2.namedWindow(WIN_NAME, cv2.WINDOW_AUTOSIZE)
 
 frameCount = 0
 
 while True:
     t1 = cv2.getTickCount()
-    frame = camera.read();
+    frame = camera.read()
     frame_expanded = np.expand_dims(frame, axis=0)
 
     (boxes, scores, classes, num) = TFSess.run(
         [detection_boxes, detection_scores, detection_classes, num_detections],
         feed_dict={image_tensor: frame_expanded})
 
-    #DEBUG
-    #print(boxes)
-    #print(np.squeeze(boxes))
-
     vis_util.visualize_boxes_and_labels_on_image_array(
         frame,
-        np.atleast_2d(np.squeeze(boxes)),#no optimizable
+        np.atleast_2d(np.squeeze(boxes)),
         np.atleast_1d(np.squeeze(classes).astype(np.int32)),
         np.atleast_1d(np.squeeze(scores)),
         category_index,
@@ -86,21 +81,18 @@ while True:
         line_thickness=8,
         min_score_thresh=0.50)
 
-    cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
+    cv2.putText(frame, "FPS: {0:.2f}".format(frame_rate_calc), (30, 50), font, 1, (255, 255, 0), 2, cv2.LINE_AA)
 
     cv2.imshow(WIN_NAME, frame)
 
     t2 = cv2.getTickCount()
-    time1 = (t2-t1)/freq
-    frame_rate_calc = 1/time1
+    time1 = (t2 - t1) / freq
+    frame_rate_calc = 1 / time1
 
-    frameCount+=1
-    #if frameCount == 3:
+    frameCount += 1
+    # if frameCount == 3:
     #    break
     if cv2.waitKey(1) == ord('q'):
         break
 
-cap.release()
-
 cv2.destroyAllWindows()
-

@@ -16,7 +16,7 @@ sudo apt-get install -y \
         libfreetype6-dev \
         openmpi-bin \
         openmpi-common \
-	protobuf-compiler \
+	      protobuf-compiler \
         libprotoc-dev \
         python3-venv \
         libhdf5-serial-dev \
